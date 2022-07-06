@@ -63,13 +63,27 @@ async function run() {
             }
         });
 
-        app.post("/auth/login", async(req, res) =>{
+        app.post("/auth/login", async (req, res) => {
             const email = req.body.email;
+            console.log(email)
             const password = req.body.password;
-            const user = await userCollection.findOne({email});
-            if(user.email !== email){
-                return res.send({message: "User does not exist"})
+            const user = await userCollection.findOne({ email });
+            console.log(user)
+            if (!user) {
+                return res.send({ message: "User & password does not exist" })
             }
+            if (await bcrypt.compare(password, user.password)) {
+                const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, {
+                    expiresIn: '1h'
+                })
+                if (token) {
+                    return res.send({ message: "Successful", token })
+                }
+                else {
+                    res.send({message: "User & password does not exist"})
+                }
+            }
+            res.send({message: "User & password does not exist"})
         });
     }
     finally {
