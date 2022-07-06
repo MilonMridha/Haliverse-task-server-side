@@ -42,30 +42,35 @@ async function run() {
             const name = data.name;
             const password = await bcrypt.hash(userPass, 10);
             const users = await userCollection.find({}).toArray();
-            
+
             let isUser;
             users.forEach(user => {
-                
-                if(user.email === email){
+
+                if (user.email === email) {
                     return isUser = true
-                } else{
-                   return isUser = false
+                } else {
+                    return isUser = false
                 }
             })
-            if(isUser){
+            if (isUser) {
                 console.log(isUser)
-                res.send({ message: "User already registered"})
+                res.send({ message: "User already registered" })
             }
-            else{
-                const newUser = {name, email, password }
+            else {
+                const newUser = { name, email, password }
                 const result = await userCollection.insertOne(newUser)
                 res.send(result)
             }
+        });
 
-
-
-           
-        })
+        app.post("/auth/login", async(req, res) =>{
+            const email = req.body.email;
+            const password = req.body.password;
+            const user = await userCollection.findOne({email});
+            if(user.email !== email){
+                return res.send({message: "User does not exist"})
+            }
+        });
     }
     finally {
 
