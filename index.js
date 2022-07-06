@@ -35,6 +35,21 @@ async function run() {
         await client.connect();
         const userCollection = client.db("heliverse").collection("users");
 
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const cursor = userCollection.find(query);
+            const result =  (await cursor.toArray());
+            res.send(result);
+
+        });
+
+        app.get('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await userCollection.findOne(query);
+            res.send(result);
+        });
+
         app.post("/auth/register", async (req, res) => {
             const data = req.body;
             const email = data.email;
