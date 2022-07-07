@@ -14,27 +14,12 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 console.log("db connected");
 
-function verifyJWT(req, res, next) {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader) {
-        return res.status(401).send({ message: 'UnAuthorized access' })
-    }
-    const token = authHeader.split(' ')[1];
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-        if (err) {
-            return res.status(403).send({ message: 'Forbidden access' })
-        }
-        req.decoded = decoded;
-        next();
-    })
-}
 
 async function run() {
     try {
         await client.connect();
         const userCollection = client.db("heliverse").collection("users");
-
+        // Get Api all
         app.get('/users', async (req, res) => {
             const query = {};
             const cursor = userCollection.find(query);
@@ -42,19 +27,21 @@ async function run() {
             res.send(result);
 
         });
-
+        //Get Api by Id
         app.get('/users/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await userCollection.findOne(query);
             res.send(result);
         });
+        //Delete Api 
         app.delete('/users/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await userCollection.deleteOne(query);
             res.send(result);
         });
+        // Update Api
         app.put('/users/:id', async (req, res) => {
             const id = req.params.id;
             const newUser = req.body;
@@ -65,8 +52,9 @@ async function run() {
             };
             const result = await userCollection.updateOne(filter, updateDoc, options)
             res.send(result)
-        })
+        });
 
+        //Register Api
         app.post("/auth/register", async (req, res) => {
             const data = req.body;
             const email = data.email;
@@ -94,7 +82,7 @@ async function run() {
                 res.send(result)
             }
         });
-
+        // Login Api
         app.post("/auth/login", async (req, res) => {
             const email = req.body.email;
             
