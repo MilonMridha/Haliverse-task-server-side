@@ -49,6 +49,23 @@ async function run() {
             const result = await userCollection.findOne(query);
             res.send(result);
         });
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await userCollection.deleteOne(query);
+            res.send(result);
+        });
+        app.put('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const newUser = req.body;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: newUser
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options)
+            res.send(result)
+        })
 
         app.post("/auth/register", async (req, res) => {
             const data = req.body;
@@ -80,7 +97,7 @@ async function run() {
 
         app.post("/auth/login", async (req, res) => {
             const email = req.body.email;
-            console.log(email)
+            
             const password = req.body.password;
             const user = await userCollection.findOne({ email });
             console.log(user)
